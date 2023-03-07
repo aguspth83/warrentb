@@ -9,7 +9,7 @@ import time
 import sqlite3
 
 # -----------SQL-----------
-resultados_total = sqlite3.connect("resultados.db")
+resultados_total = sqlite3.connect("resultados1m.db")
 cur = resultados_total.cursor()
 cur.execute("""
 CREATE table IF NOT EXISTS resultados (
