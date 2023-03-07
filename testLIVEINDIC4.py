@@ -6,6 +6,7 @@ import ta
 import telegram
 import asyncio
 import time
+import sqlite3
 
 # -----------SQL-----------
 resultados_total = sqlite3.connect("resultados15m.db")
