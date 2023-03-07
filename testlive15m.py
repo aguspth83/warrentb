@@ -52,7 +52,7 @@ with open(f"WarrenBot15LOG{fecha_log}.txt", "w") as f:
         position = 0.0
         profit_list = []
         # Initial message
-        intro = f"🤖 Warren Bot v1.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n🟢 1 minute timeframe\n"
+        intro = f"🤖 Warren Bot v1.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n🔵 15 minute timeframe\n"
         f.write(intro)
         await send_telegram_message(intro)
         print(intro)
