@@ -138,6 +138,9 @@ with open(f"WarrenBotLOG{fecha_log}.txt", "w") as f:
                     (buy_balance + (buy_balance * (profit / 100))))
                     message = f"🔵 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nAccount balance: {account_balance:.2f}\n"
                     message2 = f"🔵 Total Profit/Loss (%): {sum(tup[1] for tup in profit_list):.2f}\n"
+                    cur.execute("""INSERT INTO resultados (fecha, profitloss) VALUES (?, ?)""",
+                                (current_time_sell, profit))
+                    resultados_total.commit()
                     await send_telegram_message(message)
                     await send_telegram_message(message2)
                     print(message)
