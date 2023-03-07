@@ -7,6 +7,16 @@ import telegram
 import asyncio
 import time
 
+# -----------SQL-----------
+resultados_total = sqlite3.connect("resultados15m.db")
+cur = resultados_total.cursor()
+cur.execute("""
+CREATE table IF NOT EXISTS resultados (
+id INTEGER NOT NULL, 
+fecha VARCHART NOT NULL, 
+profitloss FLOAT NOT NULL, 
+PRIMARY KEY(id AUTOINCREMENT))""")
+
 # Set up the exchange and pair
 exchange = ccxt.binance()
 symbol = 'ETH/USDT'
