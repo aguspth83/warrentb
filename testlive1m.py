@@ -39,7 +39,7 @@ async def send_telegram_message(message):
 
 fecha_log = datetime.now().strftime("%d-%m-%Y %H:%M")
 
-with open(f"WarrenBotLOG{fecha_log}.txt", "w") as f:
+with open(f"WarrenBot1LOG{fecha_log}.txt", "w") as f:
     # Infinite loop to continuously fetch live data and generate signals
     async def run_bot():
         # Set up variables for tracking positions
