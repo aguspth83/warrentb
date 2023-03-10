@@ -23,7 +23,7 @@ exchange = ccxt.binance()
 symbol = 'ETH/USDT'
 
 # Set up the candle timeframe
-timeframe = '1m'
+timeframe = '5m'
 
 # Set up the Telegram bot
 bot_token = '6207709237:AAEGT3X3X-JMkETaSa6oQw14cJPo0qsonrg'
