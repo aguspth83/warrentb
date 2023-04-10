@@ -40,6 +40,8 @@ async def run_bot():
     profit_list = []
     stoploss_percent = 0.01  # set the stoploss in percentage
     fee_perc = 0.001 # Binance transaction fee
+    fee_buy = 0.0
+    fee_sell = 0.0
     stoploss_count = 0
 
     # Initial message
@@ -83,7 +85,7 @@ async def run_bot():
                 position = buy_balance / buy_price
                 fee_buy = buy_balance * fee_perc
                 account_balance = account_balance - (buy_price * position) - (fee_buy)
-                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nFee: {fee_buy}\nAccount balance: {account_balance:.2f}\n"
+                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nBinance Fee: {fee_buy:.2f}\nAccount balance: {account_balance:.2f}\n"
                 await send_telegram_message(message)
                 print(message)
                 buy_signal = True
@@ -95,17 +97,24 @@ async def run_bot():
                 fee_sell = (sell_price * position) * fee_perc
                 profit = (sell_price - buy_price) / buy_price * 100
                 profit_list.append((current_time_sell, profit))
-                account_balance = account_balance + (sell_price * position) - (buy_price * position) - fee_sell + (
-                    (buy_balance + (buy_balance * (profit / 100))))
-                message = f"🔴 📉 SELL STOPLOSS {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nFee: {fee_sell}\nAccount balance: {account_balance:.2f}\n"
+                account_balance = account_balance + (sell_price * position) - (fee_sell)
+                message = f"🔴 📉 SELL STOPLOSS {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nAccount balance: {account_balance:.2f}\n"
                 message2 = f"🔴 Total Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n"
                 await send_telegram_message(message)
                 await send_telegram_message(message2)
                 print(message)
                 print(message2)
                 position = 0.0
+                stoploss_count += 1
                 sell_signal = True
                 buy_signal = False
+                if stoploss_count == 2:
+                    message3 = f"Desactivando Bot por 12 horas"
+                    await send_telegram_message(message3)
+                    print(message3)
+                    time.sleep(720 * 60)  # sleep for 12 hours
+                    stoploss_count = 0
+                    continue
             # Check for sell signal
             elif row['signal'] == -1 and sell_signal == False:
                 current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -113,14 +122,14 @@ async def run_bot():
                 fee_sell = (sell_price * position) * fee_perc
                 profit = (sell_price - buy_price) / buy_price * 100
                 profit_list.append((current_time_sell, profit))
-                account_balance = account_balance + (sell_price * position) - (buy_price * position) - fee_sell + (
-                    (buy_balance + (buy_balance * (profit / 100))))
-                message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nFee: {fee_sell}\nAccount balance: {account_balance:.2f}\n"
+                account_balance = account_balance + (sell_price * position) - (fee_sell)
+                message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nFee: {fee_sell:.2f}\nAccount balance: {account_balance:.2f}\n"
                 message2 = f"🟢 Total Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n"
                 await send_telegram_message(message)
                 await send_telegram_message(message2)
                 print(message)
                 position = 0.0
+                stoploss_count = 0
                 sell_signal = True
                 buy_signal = False
 
