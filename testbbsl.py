@@ -39,14 +39,17 @@ async def run_bot():
     position = 0.0
     profit_list = []
     stoploss_percent = 0.01  # set the stoploss in percentage
+    fee_perc = 0.001 # Binance transaction fee
+    stoploss_count = 0
 
     # Initial message
-    intro = f"🤖 Warren Bot v1.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n🔵 5 minute timeframe\nStoploss = 1%\n"
+    intro = f"🤖 Warren Bot v2.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n5 minute timeframe\nStoploss: 1%\nBinance fee: 0,1%\n"
     await send_telegram_message(intro)
     print(intro)
     buy_signal = False
     sell_signal = True
     while True:
+
         # Fetch the last 500 candles
         ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=500)
 
@@ -78,8 +81,9 @@ async def run_bot():
                 buy_price = last_price
                 buy_balance = account_balance * perc_capital
                 position = buy_balance / buy_price
-                account_balance = account_balance - (buy_price * position)
-                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nAccount balance: {account_balance:.2f}\n"
+                fee_buy = buy_balance * fee_perc
+                account_balance = account_balance - (buy_price * position) - (fee_buy)
+                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nFee: {fee_buy}\nAccount balance: {account_balance:.2f}\n"
                 await send_telegram_message(message)
                 print(message)
                 buy_signal = True
@@ -88,12 +92,13 @@ async def run_bot():
             elif (row['close'] < (1 - stoploss_percent) * buy_price) and sell_signal == False:
                 current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                 sell_price = last_price
+                fee_sell = (sell_price * position) * fee_perc
                 profit = (sell_price - buy_price) / buy_price * 100
                 profit_list.append((current_time_sell, profit))
-                account_balance = account_balance + (sell_price * position) - (buy_price * position) + (
+                account_balance = account_balance + (sell_price * position) - (buy_price * position) - fee_sell + (
                     (buy_balance + (buy_balance * (profit / 100))))
-                message = f"🔵 📉 SELL STOPLOSS {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nAccount balance: {account_balance:.2f}\n"
-                message2 = f"🔵 Total Profit/Loss (%): {sum(tup[1] for tup in profit_list):.2f}\n"
+                message = f"🔴 📉 SELL STOPLOSS {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nFee: {fee_sell}\nAccount balance: {account_balance:.2f}\n"
+                message2 = f"🔴 Total Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n"
                 await send_telegram_message(message)
                 await send_telegram_message(message2)
                 print(message)
@@ -105,12 +110,13 @@ async def run_bot():
             elif row['signal'] == -1 and sell_signal == False:
                 current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                 sell_price = last_price
+                fee_sell = (sell_price * position) * fee_perc
                 profit = (sell_price - buy_price) / buy_price * 100
                 profit_list.append((current_time_sell, profit))
-                account_balance = account_balance + (sell_price * position) - (buy_price * position) + (
+                account_balance = account_balance + (sell_price * position) - (buy_price * position) - fee_sell + (
                     (buy_balance + (buy_balance * (profit / 100))))
-                message = f"🔵 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nAccount balance: {account_balance:.2f}\n"
-                message2 = f"🔵 Total Profit/Loss (%): {sum(tup[1] for tup in profit_list):.2f}\n"
+                message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nFee: {fee_sell}\nAccount balance: {account_balance:.2f}\n"
+                message2 = f"🟢 Total Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n"
                 await send_telegram_message(message)
                 await send_telegram_message(message2)
                 print(message)
@@ -125,7 +131,7 @@ async def run_bot():
         print(message)
         print(df.tail(1))
         print(f"{symbol} last price: {last_price}")
-        print(f"Profit/Loss (%): {sum(tup[1] for tup in profit_list):.2f}")
+        print(f"Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n")
         print("--------------------------------------------------------------------")
         time.sleep(10)  # Wait for 10 seconds before fetching the next set of candles
 
