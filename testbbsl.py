@@ -2,7 +2,6 @@ import ccxt
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import ta
 import telegram
 import asyncio
 import time
@@ -45,7 +44,7 @@ async def run_bot():
     stoploss_count = 0
 
     # Initial message
-    intro = f"🤖 Warren Bot v2.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n5 minute timeframe\nStoploss: 1%\nBinance fee: 0,1%\n"
+    intro = f"🤖 Warren Bot v2.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n5 minute timeframe\nStoploss: {stoploss_percent*100}%\nBinance fee: {fee_perc*100}%\n"
     await send_telegram_message(intro)
     print(intro)
     buy_signal = False
@@ -85,7 +84,7 @@ async def run_bot():
                 position = buy_balance / buy_price
                 fee_buy = buy_balance * fee_perc
                 account_balance = account_balance - (buy_price * position) - (fee_buy)
-                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nBinance Fee: {fee_buy:.2f}\nAccount balance: {account_balance:.2f}\n"
+                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nBinance Fee: {fee_buy:.2f}\nETH balance: {position}\nAccount balance: {account_balance:.2f}\n"
                 await send_telegram_message(message)
                 print(message)
                 buy_signal = True
@@ -98,22 +97,23 @@ async def run_bot():
                 profit = (sell_price - buy_price) / buy_price * 100
                 profit_list.append((current_time_sell, profit))
                 account_balance = account_balance + (sell_price * position) - (fee_sell)
-                message = f"🔴 📉 SELL STOPLOSS {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nAccount balance: {account_balance:.2f}\n"
-                message2 = f"🔴 Total Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n"
+                message = f"🔴 📉 SELL STOPLOSS {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nETH balance: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
                 await send_telegram_message(message)
-                await send_telegram_message(message2)
                 print(message)
-                print(message2)
                 position = 0.0
                 stoploss_count += 1
                 sell_signal = True
                 buy_signal = False
+                # Sleep mode in case of 2 stoploss
                 if stoploss_count == 2:
-                    message3 = f"Desactivando Bot por 12 horas"
-                    await send_telegram_message(message3)
-                    print(message3)
+                    message2 = f"💤 Bot sleep mode for 12 hours"
+                    await send_telegram_message(message2)
+                    print(message2)
                     time.sleep(720 * 60)  # sleep for 12 hours
                     stoploss_count = 0
+                    message3 = f"✅ Bot reactivated"
+                    await send_telegram_message(message3)
+                    print(message3)
                     continue
             # Check for sell signal
             elif row['signal'] == -1 and sell_signal == False:
@@ -123,10 +123,8 @@ async def run_bot():
                 profit = (sell_price - buy_price) / buy_price * 100
                 profit_list.append((current_time_sell, profit))
                 account_balance = account_balance + (sell_price * position) - (fee_sell)
-                message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}, profit: {profit:.2f}%\nFee: {fee_sell:.2f}\nAccount balance: {account_balance:.2f}\n"
-                message2 = f"🟢 Total Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n"
+                message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nETH balance: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
                 await send_telegram_message(message)
-                await send_telegram_message(message2)
                 print(message)
                 position = 0.0
                 stoploss_count = 0
