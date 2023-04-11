@@ -84,7 +84,7 @@ async def run_bot():
                 position = buy_balance / buy_price
                 fee_buy = buy_balance * fee_perc
                 account_balance = account_balance - (buy_price * position) - (fee_buy)
-                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nBinance Fee: {fee_buy:.2f}\nETH balance: {position}\nAccount balance: {account_balance:.2f}\n"
+                message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nBinance Fee: {fee_buy:.2f}\nETH balance: {position:.2f}\nAccount balance: {account_balance:.2f}\n"
                 await send_telegram_message(message)
                 print(message)
                 buy_signal = True
