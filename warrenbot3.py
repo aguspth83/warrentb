@@ -14,14 +14,14 @@ import telegram
 import asyncio
 import time
 import csv
-
+import os
 
 # Set up the exchange and pair
 exchange = ccxt.binance()
 symbol = 'ETH/USDT'
 
 # Set up the candle timeframe
-timeframe = '5m'
+timeframe = '15m'
 
 # Set up the Telegram bot
 bot_token = '6207709237:AAEGT3X3X-JMkETaSa6oQw14cJPo0qsonrg'
@@ -29,7 +29,10 @@ chat_id = '-1001501848303'
 
 csv_filename = 'trading_data.csv'
 csv_headers = ['Type', 'Amount', 'Symbol', 'Price', 'Fee', 'Profit/Loss', 'Date']
-
+if not os.path.exists(csv_filename):
+    with open(csv_filename, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(csv_headers)
 
 async def send_telegram_message(message):
     bot = telegram.Bot(token=bot_token)
@@ -50,7 +53,7 @@ async def run_bot():
     position = 0.0
     profit_list = []
     stoploss_percent = 0.01  # set the stoploss in percentage
-    t_stoploss_percent = 0.02
+    t_stoploss_percent = 0.002
     fee_perc = 0.001 # Binance transaction fee
     fee_buy = 0.0
     fee_sell = 0.0
@@ -69,7 +72,6 @@ async def run_bot():
             writer.writerow(data)
 
     while True:
-
         # Fetch the last 500 candles
         ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=500)
 
@@ -88,7 +90,6 @@ async def run_bot():
         # Generate buy/sell signals based on Bollinger bands
         df['signal'] = np.where((df['close'] < df['Lower_Band']), 1.0, 0.0)
         df['signal'] = np.where((df['close'] > df['Upper_Band']), -1.0, df['signal'])
-
 
         ticker_symbol = exchange.fetch_ticker(symbol)
         last_price = ticker_symbol['last']  # Update the last_price variable
@@ -148,6 +149,7 @@ async def run_bot():
             # Update the highest price
             if row['close'] > highest_price:
                 highest_price = row['close']
+                print(highest_price)
 
         # Wait for the next candle to form
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
