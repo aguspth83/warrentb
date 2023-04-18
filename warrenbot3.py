@@ -60,7 +60,7 @@ async def run_bot():
     stoploss_count = 0
 
     # Initial message
-    intro = f"🤖 Warren Bot v3.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n5 minute timeframe\nStoploss: {stoploss_percent*100}%\nBinance fee: {fee_perc*100}%\n"
+    intro = f"🤖 Warren Bot v3.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n15 minute timeframe\nStoploss: {stoploss_percent*100}%\nBinance fee: {fee_perc*100}%\n"
     await send_telegram_message(intro)
     print(intro)
     buy_signal = False
