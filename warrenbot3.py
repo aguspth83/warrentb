@@ -117,8 +117,11 @@ async def run_bot():
                 highest_price = 0
             # Check for sell signal and trailing stop loss
             elif row['signal'] == -1 and sell_signal == False:
+                cond1 = "✅ Sell condition 1"
+                await send_telegram_message(cond1)
+                print(cond1)
                 while True:
-                    if row['close'] >= (1 - t_stoploss_percent) * highest_price and (sell_price - buy_price) / buy_price >= 0.003:
+                    if row['close'] == (1 - t_stoploss_percent) * highest_price and (last_price - buy_price) / buy_price >= 0.003:
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                         sell_price = last_price
                         fee_sell = (sell_price * position) * fee_perc
@@ -156,7 +159,7 @@ async def run_bot():
                     print(message2)
                     time.sleep(360 * 60)  # sleep for 6 hours
                     stoploss_count = 0
-                    message3 = f"✅ Bot reactivated"
+                    message3 = f"➡️ Bot reactivated"
                     await send_telegram_message(message3)
                     print(message3)
                     continue
