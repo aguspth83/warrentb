@@ -53,14 +53,16 @@ async def run_bot():
     position = 0.0
     profit_list = []
     stoploss_percent = 0.01  # set the stoploss in percentage
-    t_stoploss_percent = 0.002
+    t_stoploss_percent = 0.003
     fee_perc = 0.001 # Binance transaction fee
     fee_buy = 0.0
     fee_sell = 0.0
     stoploss_count = 0
+    # Define a variable to keep track of the highest price since the sell signal appeared
+    highest_price = 0
 
     # Initial message
-    intro = f"🤖 Warren Bot v3.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n5 minute timeframe\nStoploss: {stoploss_percent*100}%\nBinance fee: {fee_perc*100}%\n"
+    intro = f"🤖 Warren Bot v3.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n15 minute timeframe\nStoploss: {stoploss_percent*100}%\nTrailing Stoploss: {t_stoploss_percent*100}%\nBinance fee: {fee_perc*100}%\n"
     await send_telegram_message(intro)
     print(intro)
     buy_signal = False
@@ -94,9 +96,6 @@ async def run_bot():
         ticker_symbol = exchange.fetch_ticker(symbol)
         last_price = ticker_symbol['last']  # Update the last_price variable
 
-        # Define a variable to keep track of the highest price since the sell signal appeared
-        highest_price = 0
-
         # Check the last row of the DataFrame for buy/sell signals and prices
         for i, row in df.tail(1).iterrows():
             # Check for buy signal
@@ -117,11 +116,30 @@ async def run_bot():
                 highest_price = 0
             # Check for sell signal and trailing stop loss
             elif row['signal'] == -1 and sell_signal == False:
-                cond1 = "✅ Sell condition 1"
+                cond1 = f"✅ Sell condition 1 at {last_price} (HP {highest_price})"
                 await send_telegram_message(cond1)
                 print(cond1)
                 while True:
-                    if row['close'] == (1 - t_stoploss_percent) * highest_price and (last_price - buy_price) / buy_price >= 0.003:
+                    last_price = ticker_symbol['last']  # Update the last_price variable
+                    if last_price > highest_price:
+                        highest_price = last_price
+                    if last_price <= (1 - t_stoploss_percent) * highest_price and (last_price - buy_price) / buy_price >= 0.003:
+                        current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+                        sell_price = last_price
+                        fee_sell = (sell_price * position) * fee_perc
+                        profit = (sell_price - buy_price) / buy_price * 100
+                        profit_list.append((current_time_sell, profit))
+                        account_balance = account_balance + (sell_price * position) - (fee_sell)
+                        message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nETH balance: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
+                        # write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
+                        await send_telegram_message(message)
+                        print(message)
+                        position = 0.0
+                        stoploss_count = 0
+                        sell_signal = True
+                        buy_signal = False
+                        break
+                    elif last_price <= buy_price:
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                         sell_price = last_price
                         fee_sell = (sell_price * position) * fee_perc
@@ -164,9 +182,10 @@ async def run_bot():
                     print(message3)
                     continue
             # Update the highest price
-            if row['close'] > highest_price:
-                highest_price = row['close']
-                print(highest_price)
+            if last_price > highest_price:
+                highest_price = last_price
+        print(last_price)
+        print(highest_price)
 
         # Wait for the next candle to form
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
