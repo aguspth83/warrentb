@@ -60,6 +60,9 @@ async def run_bot():
     stoploss_count = 0
     # Define a variable to keep track of the highest price since the sell signal appeared
     highest_price = 0
+    counter = 0  # Initialize the counter variable
+    positivos = []
+    negativos = []
 
     # Initial message
     intro = f"🤖 Warren Bot v3.0 - Running 🚀\nInitial Balance: {initial_account_balance} USDT\n% of K used for orders: {(perc_capital*100)}\n15 minute timeframe\nStoploss: {stoploss_percent*100}%\nTrailing Stoploss: {t_stoploss_percent*100}%\nBinance fee: {fee_perc*100}%\n"
@@ -116,19 +119,17 @@ async def run_bot():
                 highest_price = 0
             # Check for sell signal and trailing stop loss
             elif row['signal'] == -1 and sell_signal == False:
-                cond1 = f"✅ Sell condition 1 at {last_price} (HP {highest_price} - BP {buy_price} - TSL {t_stoploss_percent})"
+                cond1 = f"✅ Sell condition 1 at {last_price} (highest price: {highest_price} - buy price: {buy_price} - trailing stoploss: {t_stoploss_percent})"
                 await send_telegram_message(cond1)
                 print(cond1)
                 while True:
                     last_price = ticker_symbol['last']  # Update the last_price variable
                     if last_price > highest_price:
                         highest_price = last_price
-                    print(last_price)
-                    print(highest_price)
                     cuenta1 = (1 - t_stoploss_percent) * highest_price
                     cuenta2 = (last_price - buy_price) / buy_price
-                    print(cuenta1)
-                    print(cuenta2)
+                    print(f"Price: last {last_price} - highest {highest_price}")
+                    print(f"Condition 2: {cuenta1:2f} - {cuenta2:2f}")
                     if (last_price <= ((1 - t_stoploss_percent) * highest_price)) and (((last_price - buy_price) / buy_price) > 0.003):
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                         sell_price = last_price
@@ -144,6 +145,10 @@ async def run_bot():
                         stoploss_count = 0
                         sell_signal = True
                         buy_signal = False
+                        if profit > 0:
+                            positivos.append(1)
+                        elif profit <= 0:
+                            negativos.append(1)
                         break
                     elif last_price <= buy_price:
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -160,6 +165,10 @@ async def run_bot():
                         stoploss_count = 0
                         sell_signal = True
                         buy_signal = False
+                        if profit > 0:
+                            positivos.append(1)
+                        elif profit <= 0:
+                            negativos.append(1)
                         break
                     time.sleep(5)
             # Check for stop loss at 1% below buying price
@@ -178,6 +187,7 @@ async def run_bot():
                 stoploss_count += 1
                 sell_signal = True
                 buy_signal = False
+                negativos.append(1)
                 if stoploss_count == 1:
                     message2 = f"💤 Bot sleep mode for 6 hours"
                     await send_telegram_message(message2)
@@ -191,8 +201,6 @@ async def run_bot():
             # Update the highest price
             if last_price > highest_price:
                 highest_price = last_price
-        #print(last_price)
-        #print(highest_price)
 
         # Wait for the next candle to form
         #current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -204,5 +212,20 @@ async def run_bot():
         #print(f"Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n")
         #print("--------------------------------------------------------------------")
         time.sleep(10)  # Wait for 10 seconds before fetching the next set of candles
+        counter += 1
+        if counter % 360 == 0:
+            # Print your statement here
+            current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            total_positivos = sum(positivos)
+            total_negativos = sum(negativos)
+            print("--------------------------------------------------------------------")
+            print(f"60 minutes at {current_time}\n")
+            print("Last data:")
+            print(df.tail(1))
+            print(f"\n{symbol} last price: {last_price} / highest price: {highest_price}")
+            print(f"Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}")
+            print(f"Operaciones positivas: {total_positivos}")
+            print(f"Operaciones negativas: {total_negativos}")
+            print("--------------------------------------------------------------------")
 
 asyncio.run(run_bot())
