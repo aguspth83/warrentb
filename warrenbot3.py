@@ -27,12 +27,12 @@ timeframe = '15m'
 bot_token = '6207709237:AAEGT3X3X-JMkETaSa6oQw14cJPo0qsonrg'
 chat_id = '-1001501848303'
 
-"""csv_filename = 'trading_data.csv'
+csv_filename = 'trading_data.csv'
 csv_headers = ['Type', 'Amount', 'Symbol', 'Price', 'Fee', 'Profit/Loss', 'Date']
 if not os.path.exists(csv_filename):
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(csv_headers)"""
+        writer.writerow(csv_headers)
 
 async def send_telegram_message(message):
     bot = telegram.Bot(token=bot_token)
@@ -68,10 +68,10 @@ async def run_bot():
     buy_signal = False
     sell_signal = True
 
-    """def write_to_csv(data):
+    def write_to_csv(data):
         with open(csv_filename, mode='a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(data)"""
+            writer.writerow(data)
 
     while True:
         # Fetch the last 500 candles
@@ -107,7 +107,7 @@ async def run_bot():
                 fee_buy = buy_balance * fee_perc
                 account_balance = account_balance - (buy_price * position) - (fee_buy)
                 message = f"🔵 📈 BUY {buy_balance:.2f} in {symbol} at {current_time_buy} price: {buy_price}\nBinance Fee: {fee_buy:.2f}\nETH balance: {position:.2f}\nAccount balance: {account_balance:.2f}\n"
-                # write_to_csv(['Buy', buy_balance, symbol, buy_price, fee_buy,'', current_time_buy])
+                write_to_csv(['Buy', buy_balance, symbol, buy_price, fee_buy,'', current_time_buy])
                 await send_telegram_message(message)
                 print(message)
                 buy_signal = True
@@ -116,14 +116,20 @@ async def run_bot():
                 highest_price = 0
             # Check for sell signal and trailing stop loss
             elif row['signal'] == -1 and sell_signal == False:
-                cond1 = f"✅ Sell condition 1 at {last_price} (HP {highest_price})"
+                cond1 = f"✅ Sell condition 1 at {last_price} (HP {highest_price} - BP {buy_price} - TSL {t_stoploss_percent})"
                 await send_telegram_message(cond1)
                 print(cond1)
                 while True:
                     last_price = ticker_symbol['last']  # Update the last_price variable
                     if last_price > highest_price:
                         highest_price = last_price
-                    if last_price <= (1 - t_stoploss_percent) * highest_price and (last_price - buy_price) / buy_price >= 0.003:
+                    print(last_price)
+                    print(highest_price)
+                    cuenta1 = (1 - t_stoploss_percent) * highest_price
+                    cuenta2 = (last_price - buy_price) / buy_price
+                    print(cuenta1)
+                    print(cuenta2)
+                    if (last_price <= ((1 - t_stoploss_percent) * highest_price)) and (((last_price - buy_price) / buy_price) > 0.003):
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                         sell_price = last_price
                         fee_sell = (sell_price * position) * fee_perc
@@ -131,7 +137,7 @@ async def run_bot():
                         profit_list.append((current_time_sell, profit))
                         account_balance = account_balance + (sell_price * position) - (fee_sell)
                         message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nETH balance: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
-                        # write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
+                        write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
                         await send_telegram_message(message)
                         print(message)
                         position = 0.0
@@ -147,7 +153,7 @@ async def run_bot():
                         profit_list.append((current_time_sell, profit))
                         account_balance = account_balance + (sell_price * position) - (fee_sell)
                         message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nETH balance: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
-                        # write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
+                        write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
                         await send_telegram_message(message)
                         print(message)
                         position = 0.0
@@ -164,7 +170,7 @@ async def run_bot():
                 profit_list.append((current_time_sell, profit))
                 account_balance = account_balance + (sell_price * position) - (fee_sell)
                 message = f"🔴 📉 SELL STOPLOSS 1% below buying price {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nETH balance: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
-                # write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
+                write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
                 await send_telegram_message(message)
                 print(message)
                 position = 0.0
@@ -184,18 +190,18 @@ async def run_bot():
             # Update the highest price
             if last_price > highest_price:
                 highest_price = last_price
-        print(last_price)
-        print(highest_price)
+        #print(last_price)
+        #print(highest_price)
 
         # Wait for the next candle to form
-        current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        message = "Waiting for next candle at {}".format(current_time)
-        print("--------------------------------------------------------------------")
-        print(message)
-        print(df.tail(1))
-        print(f"{symbol} last price: {last_price}")
-        print(f"Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n")
-        print("--------------------------------------------------------------------")
+        #current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        #message = "Waiting for next candle at {}".format(current_time)
+        #print("--------------------------------------------------------------------")
+        #print(message)
+        #print(df.tail(1))
+        #print(f"{symbol} last price: {last_price}")
+        #print(f"Profit/Loss (%): {(((initial_account_balance / account_balance) - 1) * 100):.2f}\n")
+        #print("--------------------------------------------------------------------")
         time.sleep(10)  # Wait for 10 seconds before fetching the next set of candles
 
 asyncio.run(run_bot())
