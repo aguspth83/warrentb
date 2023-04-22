@@ -161,6 +161,7 @@ async def run_bot():
                         sell_signal = True
                         buy_signal = False
                         break
+                    time.sleep(5)
             # Check for stop loss at 1% below buying price
             elif (row['close'] < (1 - stoploss_percent) * buy_price) and sell_signal == False:
                 current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
