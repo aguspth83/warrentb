@@ -25,7 +25,7 @@ timeframe = '15m'
 
 # Set up the Telegram bot
 bot_token = '6207709237:AAEGT3X3X-JMkETaSa6oQw14cJPo0qsonrg'
-chat_id = '-1001501848303'
+chat_id = '-1001898215353'
 
 csv_filename = 'trading_data.csv'
 csv_headers = ['Type', 'Amount', 'Symbol', 'Price', 'Fee', 'Profit/Loss', 'Date']
