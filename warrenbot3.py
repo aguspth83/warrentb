@@ -53,7 +53,7 @@ async def run_bot():
     position = 0.0
     profit_list = []
     stoploss_percent = 0.01  # set the stoploss in percentage
-    t_stoploss_percent = 0.003
+    t_stoploss_percent = 0.004
     fee_perc = 0.001 # Binance transaction fee
     fee_buy = 0.0
     fee_sell = 0.0
@@ -123,6 +123,7 @@ async def run_bot():
                 await send_telegram_message(cond1)
                 print(cond1)
                 while True:
+                    ticker_symbol = exchange.fetch_ticker(symbol)  # Refresh the ticker symbol
                     last_price = ticker_symbol['last']  # Update the last_price variable
                     if last_price > highest_price:
                         highest_price = last_price
