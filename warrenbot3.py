@@ -237,7 +237,7 @@ async def run_bot():
             total_positivos = sum(positivos)
             total_negativos = sum(negativos)
             print("--------------------------------------------------------------------")
-            print(f"60 minutes at {current_time}\n")
+            print(f"Timestamp: {current_time}\n")
             print("Last data:")
             print(df.tail(1))
             print(f"\n{symbol} last price: {last_price} / highest price: {highest_price}")
