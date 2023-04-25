@@ -149,6 +149,9 @@ async def run_bot():
                         i += 1
                         last_time = df_new.index[-1]
                     if i == n_future_candles and not buy_signal:
+                        message_cancel = "❌ Buy condition 2 not met - BUY cancelled"
+                        await send_telegram_message(message_cancel)
+                        print(message_cancel)
                         break
                     print(f"i {i} - (n-1) {n_future_candles - i}")
                     print(f"last {last_time} - df_new {df_new.index[-1]}")
