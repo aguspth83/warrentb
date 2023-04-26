@@ -126,6 +126,7 @@ async def run_bot():
                     # Calcular el MACD para el DataFrame combinado
                     df_new['MACD'] = df_new['close'].ewm(span=12, adjust=False).mean() - df_new['close'].ewm(span=26,
                                                                                                  adjust=False).mean()
+                    df_new['Signal_line'] = df_new['MACD'].ewm(span=9, adjust=False).mean()
                     df_new.set_index('timestamp', inplace=True)
                     # Verificar si se cumple la condición de compra
                     if df_new['MACD'][-1] > df_new['Signal_line'][-1]:
