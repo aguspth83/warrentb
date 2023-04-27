@@ -114,7 +114,7 @@ async def run_bot():
                 cond1_buy = f"✅ {symbol} Buy condition 1 at {last_price} (MACD {(df['MACD'][-1] - df['Signal_line'][-1]).round(2)})"
                 await send_telegram_message(cond1_buy)
                 print(cond1_buy)
-                n_future_candles = 8  # Número de velas futuras a verificar
+                n_future_candles = 16  # Número de velas futuras a verificar
                 last_time = df.index[-1]  # Hora de la última vela en el DataFrame
                 i = 0
                 while i < n_future_candles:
@@ -150,7 +150,7 @@ async def run_bot():
                         i += 1
                         last_time = df_new.index[-1]
                     if i == n_future_candles and not buy_signal:
-                        message_cancel = "❌ Buy condition 2 not met - BUY cancelled"
+                        message_cancel = f"❌ {symbol} Buy condition 2 not met - BUY cancelled"
                         await send_telegram_message(message_cancel)
                         print(message_cancel)
                         break
