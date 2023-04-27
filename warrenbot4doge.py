@@ -19,7 +19,6 @@ import asyncio
 import time
 import csv
 import os
-import grafico
 
 # Set up the exchange and pair
 exchange = ccxt.binance()
@@ -155,8 +154,6 @@ async def run_bot():
                         await send_telegram_message(message_cancel)
                         print(message_cancel)
                         break
-                    print(f"i {i} - (n-1) {n_future_candles - i}")
-                    print(f"last {last_time} - df_new {df_new.index[-1]}")
                     time.sleep(5)
             # Check for sell signal and trailing stop loss
             elif row['signal'] == -1 and sell_signal == False:
@@ -170,8 +167,6 @@ async def run_bot():
                         highest_price = last_price
                     cuenta1 = (1 - t_stoploss_percent) * highest_price
                     cuenta2 = (last_price - buy_price) / buy_price
-                    print(f"Price: last {last_price} - highest {highest_price}")
-                    print(f"Condition 2: {cuenta1:2f} - {cuenta2:2f}")
                     if ((1 - t_stoploss_percent) * highest_price) >= last_price > (buy_price * 1.003):
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                         sell_price = last_price
