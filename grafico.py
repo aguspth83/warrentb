@@ -1,10 +1,9 @@
 import ccxt
 import pandas as pd
 import plotly.graph_objs as go
-import plotly.offline as pyo
 import plotly.io as pio
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
+import numpy as np
 
 def grafico(crypto, timeframe, csv):
 
@@ -61,7 +60,7 @@ def grafico(crypto, timeframe, csv):
                       height=1080)
 
     # Guarda el gráfico en un archivo JPEG con una calidad del 95%
-    file_name = f'candlestick_chart{symbol}{datetime.now}.jpg'
+    file_name = f'velas.jpg'
     pio.write_image(fig, file_name, format='jpeg')
 
     # Filtra los datos para obtener solo las señales de venta
@@ -88,20 +87,38 @@ def grafico(crypto, timeframe, csv):
                        height=1080)
 
     # Guarda el gráfico en un archivo JPEG con una calidad del 95%
-    file_name2 = f'profit_chart{symbol}{datetime.now}.jpg'
+    file_name2 = f'profit_chart.jpg'
     pio.write_image(fig2, file_name2, format='jpeg')
 
-    # Filtra los datos para el par ETH/USDT y para el período deseado
-    start_date = datetime.now() - timedelta(days=7)
-    signals = signals[(signals['Symbol'] == symbol) & (pd.to_datetime(signals['Date']) >= start_date)]
+    print(last_week)
 
-    # Calcula las ganancias para cada señal de venta
-    profits = signals[signals['Type'] == 'Sell']['Profit/Loss'].apply(lambda x: float(x.strip('%')) / 100 if isinstance(x, str) else x)
+    # Calcula el profit acumulado de los últimos 7 días
+    daily_pnl = []
+    date_range = pd.date_range(start=start_date, end=end_date)
+    for date in date_range:
+        day_signals = sell_signals[sell_signals['Date'].dt.date == date.date()]
+        if not day_signals.empty:
+            day_profit = last_week['Profit_USD'].sum()
+            daily_pnl.append(day_profit)
+        else:
+            daily_pnl.append(0)
 
-    # Calcula el acumulado de las ganancias y crea un gráfico de líneas
-    cumulative_profits = profits.cumsum()
-    cumulative_profits.plot(kind='line', title=f'Ganancias acumuladas {symbol}', xlabel='Fecha', ylabel='Ganancias')
+    # Calcula el profit acumulado de los últimos 7 días
+    cumulative_pnl = np.cumsum(daily_pnl)
+
+    # Crea un gráfico de línea que muestre el profit diario de los últimos 30 días
+    fig3 = go.Figure(data=[go.Scatter(x=date_range,
+                                      y=daily_pnl)])
+
+    # Define el diseño del gráfico con una resolución de 1920x1080
+    fig3.update_layout(title=f'PNL diario de los últimos 7 días {symbol}',
+                       xaxis_title='Fecha',
+                       yaxis_title='PNL diario en USD',
+                       yaxis_tickprefix='$',
+                       width=1920,
+                       height=1080)
 
     # Guarda el gráfico en un archivo JPEG con una calidad del 95%
-    file_name = f'profit_chart2{symbol}{datetime.now}.jpg'
-    plt.savefig(file_name, dpi=600)
+    file_name3 = f'daily_pnl.jpg'
+    pio.write_image(fig3, file_name3, format='jpeg')
+

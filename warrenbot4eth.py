@@ -287,7 +287,5 @@ async def run_bot():
             print(f"Operaciones positivas: {total_positivos}")
             print(f"Operaciones negativas: {total_negativos}")
             print("--------------------------------------------------------------------")
-        if counter % 60400 == 0:
-            grafico.grafico(symbol, timeframe, csv_filename)
 
 asyncio.run(run_bot())

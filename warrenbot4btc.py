@@ -20,6 +20,7 @@ import time
 import csv
 import os
 import grafico
+import mail
 
 # Set up the exchange and pair
 exchange = ccxt.binance()
@@ -289,5 +290,6 @@ async def run_bot():
             print("--------------------------------------------------------------------")
         if counter % 60400 == 0:
             grafico.grafico(symbol, timeframe, csv_filename)
+            mail.send_email("velas.jpg", "profit_chart.jpg", "daily_pnl.jpg")
 
 asyncio.run(run_bot())
