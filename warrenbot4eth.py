@@ -8,6 +8,9 @@ SE AGREGA EN ESTA VERSIÓN:
 25-04-23
 SE AGREGA EN ESTA VERSIÓN:
 - SEÑAL DE COMPRA 2 CON MACD EN SIGUIENTES 8 VELAS
+
+27-0-23
+SE AGREGA GRAFICOS SEMANALES Y MAIL AUTOMATICO
 """
 
 import ccxt
@@ -19,6 +22,8 @@ import asyncio
 import time
 import csv
 import os
+import grafico
+import mail
 
 # Set up the exchange and pair
 exchange = ccxt.binance()
@@ -118,6 +123,8 @@ async def run_bot():
                 last_time = df.index[-1]  # Hora de la última vela en el DataFrame
                 i = 0
                 while i < n_future_candles:
+                    ticker_symbol = exchange.fetch_ticker(symbol)
+                    last_price = ticker_symbol['last']
                     # Descargar los últimos 500 datos OHLCV desde el exchange
                     ohlcv_1 = exchange.fetch_ohlcv(symbol, timeframe, limit=500)
                     # Convertir los datos a un DataFrame de Pandas
@@ -282,5 +289,8 @@ async def run_bot():
             print(f"Operaciones positivas: {total_positivos}")
             print(f"Operaciones negativas: {total_negativos}")
             print("--------------------------------------------------------------------")
+        if counter % 60400 == 0:
+            grafico.grafico(symbol, timeframe, csv_filename)
+            mail.send_email("velas.jpg", "profit_chart.jpg", "daily_pnl.jpg")
 
 asyncio.run(run_bot())

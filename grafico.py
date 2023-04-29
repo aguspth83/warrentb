@@ -5,6 +5,7 @@ import plotly.io as pio
 from datetime import datetime, timedelta
 import numpy as np
 
+
 def grafico(crypto, timeframe, csv):
 
     # Crea una instancia del intercambio Binance

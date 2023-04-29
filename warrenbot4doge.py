@@ -118,6 +118,8 @@ async def run_bot():
                 last_time = df.index[-1]  # Hora de la última vela en el DataFrame
                 i = 0
                 while i < n_future_candles:
+                    ticker_symbol = exchange.fetch_ticker(symbol)
+                    last_price = ticker_symbol['last']
                     # Descargar los últimos 500 datos OHLCV desde el exchange
                     ohlcv_1 = exchange.fetch_ohlcv(symbol, timeframe, limit=500)
                     # Convertir los datos a un DataFrame de Pandas

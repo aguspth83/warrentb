@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 
+
 def send_email(imagen1, imagen2, imagen3):
     sender_email = 'info.warrenbot@gmail.com'
     password = "gphcsawdrlquivbu"
