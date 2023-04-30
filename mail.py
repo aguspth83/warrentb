@@ -44,7 +44,7 @@ def send_email(imagen1, imagen2, imagen3):
     # Crear el cuerpo del mensaje con la imagen incrustada
     body = """<html>
                   <body>
-                      <p>WarrenBot weekly report for BTC/USDT pair. One week candle chart with buy/sell signals, profit and daily PNL report.    </p>
+                      <p>WarrenBot weekly report for ETH/USDT pair. One week candle chart with buy/sell signals, profit and daily PNL report.    </p>
                       <p><img src="cid:image1"></p>
                       <p><img src="cid:image2"></p>
                       <p><img src="cid:image3"></p>
