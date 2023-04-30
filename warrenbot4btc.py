@@ -190,26 +190,6 @@ async def run_bot():
                         elif profit <= 0:
                             negativos.append(1)
                         break
-                    elif (buy_price * 1.003) >= last_price > buy_price:
-                        current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-                        sell_price = last_price
-                        fee_sell = (sell_price * position) * fee_perc
-                        profit = (sell_price - buy_price) / buy_price * 100
-                        profit_list.append((current_time_sell, profit))
-                        account_balance = account_balance + (sell_price * position) - (fee_sell)
-                        message = f"🟢 📉 SELL {position:.2f} {symbol} at {current_time_sell} price: {sell_price}\nProfit: {profit:.2f}%\nBinance Fee: {fee_sell:.2f}\nToken position: 0\nAccount balance: {account_balance:.2f}\nTotal Profit/Loss (%): {(((account_balance / initial_account_balance) - 1) * 100):.2f}\n"
-                        write_to_csv(['Sell', position, symbol, sell_price, fee_sell, profit, current_time_sell])
-                        await send_telegram_message(message)
-                        print(message)
-                        position = 0.0
-                        stoploss_count = 0
-                        sell_signal = True
-                        buy_signal = False
-                        if profit > 0:
-                            positivos.append(1)
-                        elif profit <= 0:
-                            negativos.append(1)
-                        break
                     elif last_price <= buy_price:
                         current_time_sell = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                         sell_price = last_price
