@@ -229,16 +229,16 @@ async def run_bot():
                 sell_signal = True
                 buy_signal = False
                 negativos.append(1)
-                #if stoploss_count == 1:
-                #    message2 = f"💤 Bot sleep mode for 6 hours"
-                #    await send_telegram_message(message2)
-                #    print(message2)
-                #    time.sleep(360 * 60)  # sleep for 6 hours
-                #    stoploss_count = 0
-                #    message3 = f"➡️ Bot reactivated"
-                #    await send_telegram_message(message3)
-                #    print(message3)
-                #    continue
+                if stoploss_count == 2:
+                    message2 = f"💤 Bot sleep mode for 6 hours"
+                    await send_telegram_message(message2)
+                    print(message2)
+                    time.sleep(360 * 60)  # sleep for 6 hours
+                    stoploss_count = 0
+                    message3 = f"➡️ Bot reactivated"
+                    await send_telegram_message(message3)
+                    print(message3)
+                    continue
             # Update the highest price
             if last_price > highest_price:
                 highest_price = last_price
